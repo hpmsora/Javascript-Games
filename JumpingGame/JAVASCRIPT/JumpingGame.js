@@ -3,9 +3,9 @@ var gameObstacle = [];
 var gameScore;
 
 function startGame() {
-  gamePiece = new component(30, 30, "red", 10, 120);
+  gamePiece = new component(25, 25, "red", 10, 120);
   gamePiece.gravity = 0.05;
-  gameScore = new component("30px", "consolas", "black", 280, 40, "text");
+  gameScore = new component("30px", "consolas", "black", $(document).width() - 150, 40, "text");
   gameArea.start();
 }
 
@@ -19,17 +19,24 @@ var gameArea = {
     this.frameNo = 0;
     window.addEventListener('keydown', function(e) {
       gameArea.key = e.keyCode;
-    })
+    });
     window.addEventListener('keyup', function(e) {
       gameArea.key = false;
-    })
+    });
     updateGameArea();
   },
   clear : function() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.beginPath();
   },
   stop : function() {
     clearInterval(this.interval);
+    window.addEventListener('keydown', function(e) {
+      gameArea.key = e.keyCode;
+    });
+    console.log("SSS");
+    gameArea.clear();
+    startGame();
   }
 }
 
@@ -42,6 +49,7 @@ function component(width, height, color, x, y, type) {
   this.y = y;
   this.gravity = 0;
   this.gravitySpeed = 0;
+  this.bounce = 0.6;
   this.update = function() {
     ctx = gameArea.context;
     if (this.type == "text") {
@@ -62,7 +70,7 @@ function component(width, height, color, x, y, type) {
     var realBottom = gameArea.canvas.height - this.height;
     if(this.y > realBottom) {
       this.y = realBottom;
-      this.gravitySpeed = 0;
+      this.gravitySpeed = -(this.gravitySpeed * this.bounce);
     }
   }
   this.crashWith = function(otherobj) {
@@ -93,7 +101,7 @@ function updateGameArea() {
   }
   gameArea.clear();
   gameArea.frameNo += 1;
-  if(gameArea.frameNo == 1 || everyInterval(150)) {
+  if(gameArea.frameNo == 1 || everyInterval(60)) {
     x = gameArea.canvas.width;
     minHeight = 20;
     maxHeight = 150;
@@ -106,14 +114,13 @@ function updateGameArea() {
   }
 
   for(i = 0; i < gameObstacle.length; i += 1) {
-    gameObstacle[i].x += -1;
+    gameObstacle[i].x += -2;
     gameObstacle[i].update();
   }
   if(gameArea.key && gameArea.key == 32) {
     accelerate(-0.2);
-    console.log("ss");
   } else {
-    accelerate(0.5);
+    accelerate(0.2);
   }
   gamePiece.newPos();
   gamePiece.update();
